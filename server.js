@@ -1,0 +1,34 @@
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const morgan = require('morgan');
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json());
+
+// MongoDB ulanish
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/inventory_db')
+  .then(() => console.log('MongoDB ga ulandi'))
+  .catch(err => console.log('MongoDB ulanish xatosi:', err));
+
+// API route-lari
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/products', require('./routes/products'));
+app.use('/api/low-stock', require('./routes/lowStock'));
+app.use('/api/sales', require('./routes/sales'));
+app.use('/api/customers', require('./routes/customers'));
+app.use('/api/stats', require('./routes/stats'));
+app.use('/api/employees', require("./routes/employees"));
+app.use("/api/salaries", require("./routes/salaries"));
+app.use("/api/borrows", require("./routes/borrow"));
+app.use("/api/statistic", require("./routes/statistic"))
+
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server ${PORT} portda ishga tushdi`));
