@@ -14,6 +14,7 @@ const ProductSchema = new mongoose.Schema({
   },
   category: { 
     type: String, 
+    default: "Хозтовар",
     required: true, 
     trim: true 
   },

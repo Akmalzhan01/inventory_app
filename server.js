@@ -28,6 +28,7 @@ app.use('/api/employees', require("./routes/employees"));
 app.use("/api/salaries", require("./routes/salaries"));
 app.use("/api/borrows", require("./routes/borrow"));
 app.use("/api/statistic", require("./routes/statistic"))
+app.use("/api/expend", require("./routes/expend"))
 
 
 const PORT = process.env.PORT || 5000;

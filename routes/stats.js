@@ -133,32 +133,4 @@ router.get('/top-products', async (req, res) => {
   }
 });
 
-// router.get('/', protect, async (req, res) => {
-//   try {
-//     const [totalProducts, totalSales, lowStockItems, totalRevenue] = await Promise.all([
-//       Product.countDocuments(),
-//       Sale.countDocuments(),
-//       Product.countDocuments({ quantity: { $lt: 10 } }),
-//       Sale.aggregate([{ $group: { _id: null, total: { $sum: "$amount" } } }])
-//     ]);
-
-//     res.json({
-//       success: true,
-//       data: {
-//         totalProducts,
-//         totalSales,
-//         totalRevenue: totalRevenue[0]?.total || 0,
-//         lowStockItems
-//       }
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ 
-//       success: false,
-//       message: 'Statistika yuklashda xato' 
-//     });
-//   }
-// });
-
-
 module.exports = router;
