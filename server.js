@@ -8,7 +8,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'https://inventory-app-karasuu.netlify.app',
+  origin: ['https://inventory-app-theta-two.vercel.app', 'https://inventory-app-karasuu.netlify.app'],
   credentials: true
 }));
 app.use(morgan('dev'));
