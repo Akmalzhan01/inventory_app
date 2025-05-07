@@ -127,7 +127,8 @@ router.get("/:year/:month", async (req, res) => {
           totalProduct,
         },
         sale: {
-          totalSale
+          totalSale,
+          credit: totalSale.totalSaleSum - totalSale.paidAmountSaleSum,
         },
         salary: {
           totalSalary,
