@@ -7,11 +7,17 @@ const morgan = require('morgan');
 const app = express();
 
 // Middleware
+<<<<<<< HEAD
 app.use(
   cors({
     origin: "*"
 })
 );
+=======
+app.use(cors({
+  origin: "*"
+}));
+>>>>>>> 606bea9c24e79c55115690c17d9e9d801ff01d16
 app.use(morgan('dev'));
 app.use(express.json());
 
