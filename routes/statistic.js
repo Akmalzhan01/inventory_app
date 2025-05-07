@@ -3,6 +3,7 @@ const Product = require("../models/Product")
 const Sale = require("../models/Sale");
 const Salary = require("../models/Salary");
 const Borrow = require("../models/Borrow");
+const Expend = require("../models/Expend");
 
 const router = express.Router()
 
@@ -25,23 +26,6 @@ router.get("/:year/:month", async (req, res) => {
     // Umumiy summani hisoblash
     const totalProduct = products.reduce((sum, product) => {
       return sum + (product.price * product.quantity);
-    }, 0);
-
-    const sales = await Sale.find({
-      $expr: {
-        $and: [
-          { $eq: [{ $year: "$saleDate" }, parseInt(year)] },
-          { $eq: [{ $month: "$saleDate" }, parseInt(month)] },
-        ]
-      }
-    }).select("total paidAmount");
-
-    const totalSaleTotal = sales.reduce((sum, sale) => {
-      return sum + (sale.total);
-    }, 0);
-
-    const totalSalePaidAmount = sales.reduce((sum, sale) => {
-      return sum + (sale.paidAmount);
     }, 0);
 
     const salaries = await Salary.find({
@@ -89,15 +73,61 @@ router.get("/:year/:month", async (req, res) => {
       return sum + borrow.itemsTotal;
     }, 0);
 
+
+
+    const sales = await Sale.find({
+      $expr: {
+        $and: [
+          { $eq: [{ $year: "$saleDate" }, parseInt(year)] },
+          { $eq: [{ $month: "$saleDate" }, parseInt(month)] },
+        ]
+      }
+    }).populate('customer', 'name phone')
+      .populate('seller', 'name')
+      .populate('items.product', 'name sku price')
+      .select("total paidAmount items");
+
+    const totalSale = sales.reduce((acc, sale) => {
+      // Сумма total всех продаж
+      acc.totalSaleSum += sale.total;
+      
+      // Сумма paidAmount всех продаж
+      acc.paidAmountSaleSum += sale.paidAmount;
+      
+      // Сумма оригинальных цен продуктов (price * quantity)
+      const originalSum = sale.items.reduce((sum, item) => {
+        return sum + (item.product.price * item.quantity);
+      }, 0);
+      
+      acc.originalPriceSaleSum += originalSum;
+      
+      return acc;
+    }, {
+      totalSaleSum: 0,
+      paidAmountSaleSum: 0,
+      originalPriceSaleSum: 0
+    });
+
+    const expend = await Expend.find({
+      $expr: {
+        $and: [
+          { $eq: [{ $year: "$date" }, parseInt(year)] },
+          { $eq: [{ $month: "$date" }, parseInt(month)] }
+        ]
+      }
+    }).select("price");
+
+    const totalExpend = expend.reduce((sum, item) => {
+      return sum + (item.price);
+    }, 0)
+
     res.status(200).json({
       sum: {
         products: {
           totalProduct,
         },
-        sales: {
-          totalSaleTotal,
-          totalSalePaidAmount,
-          totalCredit: totalSaleTotal - totalSalePaidAmount,
+        sale: {
+          totalSale
         },
         salary: {
           totalSalary,
@@ -106,6 +136,9 @@ router.get("/:year/:month", async (req, res) => {
           totalItemsSum,
           totalBorrowPaidAmount,
           remider: totalItemsSum - totalBorrowPaidAmount,
+        },
+        expend: {
+          totalExpend
         }
       }
     });
