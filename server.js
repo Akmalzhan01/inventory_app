@@ -20,10 +20,16 @@ app.use(
 app.use(morgan('dev'))
 app.use(express.json())
 
+const PORT = process.env.PORT || 5000
 // MongoDB ulanish
 mongoose
-	.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/inventory_db')
-	.then(() => console.log('MongoDB ga ulandi'))
+	.connect(process.env.MONGODB_URI, {
+		serverSelectionTimeoutMS: 10000, // 10s timeout
+	})
+	.then(() => {
+		console.log('MongoDB ga ulandi')
+		app.listen(PORT, () => console.log(`Server ${PORT} portda ishga tushdi`))
+	})
 	.catch(err => console.log('MongoDB ulanish xatosi:', err))
 
 // API route-lari
@@ -39,6 +45,3 @@ app.use('/api/salaries', require('./routes/salaries'))
 app.use('/api/borrows', require('./routes/borrow'))
 app.use('/api/statistic', require('./routes/statistic'))
 app.use('/api/expend', require('./routes/expend'))
-
-const PORT = process.env.PORT || 5000
-app.listen(PORT, () => console.log(`Server ${PORT} portda ishga tushdi`))
