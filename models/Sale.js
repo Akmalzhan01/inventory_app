@@ -103,7 +103,7 @@ const SaleSchema = new mongoose.Schema(
 		},
 		grandTotal: {
 			type: Number,
-			required: true,
+			// required: true,
 			min: 0,
 		},
 		isCredit: {
