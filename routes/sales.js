@@ -81,6 +81,7 @@ router.post('/', async (req, res) => {
 		const sale = await Sale.create({
 			customer: customer || null,
 			items: items.map(item => ({
+				name: item.name,
 				product: item.product,
 				quantity: item.quantity,
 				price: item.price || Product.findById(item.product).price,
