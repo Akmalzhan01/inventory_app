@@ -6,6 +6,8 @@ const router = express.Router()
 const authMiddleware = require('../middleware/auth')
 const adminMiddleware = require('../middleware/admin')
 const { protect } = require('../middleware/authMiddleware')
+const User = require('../models/User')
+const bcrypt = require('bcryptjs')
 
 // @route   GET /api/sales
 // @desc    Barcha sotuvlarni olish
@@ -247,28 +249,37 @@ router.get('/customer/:customerId/payments', async (req, res) => {
 		})
 	}
 })
-// @route   DELETE /api/sales/:id
+// @route   DELETE /api/sales/delete
 // @desc    Sotuvni bekor qilish (faqat admin uchun)
-router.delete('/:id', async (req, res) => {
+router.post('/delete', async (req, res) => {
+	const data = req.body
 	try {
-		const sale = await Sale.findById(req.params.id)
-		if (!sale) {
-			return res.status(404).json({ message: 'Sotuv topilmadi' })
-		}
+		const password = await User.findById(data.user._id)
+		if (password) {
+			const isMatch = await bcrypt.compare(data.pass, password.password)
+			if (isMatch) {
+				const sale = await Sale.findById(data.saleId)
+				if (!sale) {
+					return res.status(404).json({ message: 'Tovar topilmadi' })
+				}
+				// Tovarlarni qaytarish
+				const productUpdates = []
+				for (const item of sale.items) {
+					productUpdates.push({
+						updateOne: {
+							filter: { _id: item.product },
+							update: { $inc: { quantity: item.quantity } },
+						},
+					})
+				}
 
-		// Tovarlarni qaytarish
-		const productUpdates = []
-		for (const item of sale.items) {
-			productUpdates.push({
-				updateOne: {
-					filter: { _id: item.product },
-					update: { $inc: { quantity: item.quantity } },
-				},
-			})
+				await Product.bulkWrite(productUpdates)
+				await sale.deleteOne()
+				res.json({ message: "Tovar o'chirildi" })
+			} else {
+				return res.status(401).json({ success: false })
+			}
 		}
-
-		await Product.bulkWrite(productUpdates)
-		await sale.deleteOne()
 
 		res.json({ message: 'Продажа была отменена, а товар возвращен.' })
 	} catch (error) {
